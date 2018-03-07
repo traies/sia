@@ -20,3 +20,5 @@ for x = 1:N
   delta = n*(S(x)-O)*T(x,:);
   W += delta';
 endfor
+
+
