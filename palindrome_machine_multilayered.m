@@ -1,9 +1,9 @@
-H = 10;
+H = 32;
 I = 6;
 N = 32;
 p = .35;
-eta = .1;
-n = 0.5;
+eta = .01;
+P = ones(0,0);
 
 W = rand(I, H);
 W2 = rand(H+1, 1);
@@ -22,37 +22,51 @@ for x = 1:N
   else
     T(x, 2:I) = (rand(1, I-1) > 0.5) * 2 - 1 ;
   endif
-  S(x) = palindrome(I-1, T(x,2:I));
+  S(x) = palindrome(I-1, T(x,2:I))*2-1;
 endfor
 
+exit = 0;
+count = 0;
 
-for x = randperm(N)
-  
-  #Hidden layer forward
-  O = ones(1,H+1);
-  O(1) = -1;
-  O(2:H+1) = tanh(T(x, :)*W);
-  Oder = 1 - O .** 2;
-  #Output layer forward
-  o = tanh(O*W2); 
-  
-  oder = 1 - o ** 2;
-  
-  #Backpropagation o -> Hidden
-  delta1 = (S(x) - o) * oder;
-  
-  #Backpropagation Hidden -> Start
-  delta2 = Oder .* (delta1 * W2');
-  
-  #Update weights
-  
-  Delta = eta*delta2'*T(x,:);
- 
-  delta = eta*delta1*O; 
-  
-  W += Delta';
-  
-  W2 += delta';
-  
-endfor
+while(!exit)
+  for x = randperm(N)
+    
+    #Hidden layer forward
+    O = ones(1,H+1);
+    O(1) = -1;
+    O(2:H+1) = tanh(T(x, :)*W);
+    Oder = 1 - O .** 2;
+    #Output layer forward
+    o = tanh(O*W2); 
+    
+    oder = 1 - o .** 2;
+    
+    #Backpropagation o -> Hidden
+    delta1 = oder .* (S(x) - o);
+    
+    #Backpropagation Hidden -> Start
+    #removing weight of threshold
+    delta2 = Oder(2:end) .* (delta1 * W2(2:end)');
+    
+    #Update weights
+    
+    Delta = eta*T(x,:)'*delta2;
+   
+    delta = eta*delta1*O; 
+    
+    W += Delta;
+    
+    W2 += delta';
+    
+  endfor
+  p = success_rate(T,S,W,W2,H);
+  P(end+1) = p;
+  if(p == 1)
+    exit = 1;
+  else
+    count += 1;
+  endif
+endwhile
+
+
 
