@@ -3,8 +3,9 @@
 # h number of hidden layers
 # H hidden layer dimensions (bias not included)
 # W neural network weights
-function W = train(T, S, h, H, eta=0.001)
+function W = train(T, S, h, H, eta=0.001, alfa=0.9)
  W = {};
+ oldWDelta = {};
  T_size = size(T)(2);
  samples = length(S);
  #  Consider bias in first layer size
@@ -13,11 +14,12 @@ function W = train(T, S, h, H, eta=0.001)
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
    W{i} = rand(prev,H(i));
+   oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
  W{h+1} = rand(prev, 1);
- 
+ oldWDelta{h+1} = zeros(prev, 1);
  exit = 0;
  iter = 0;
  while 1
@@ -50,7 +52,9 @@ function W = train(T, S, h, H, eta=0.001)
     
     # Update Weights
     for i = 1:h+1
-      W{i} += eta * V{i}' * Delta{i} ;
+      WDelta = eta * V{i}' * Delta{i};
+      W{i} += WDelta + alfa * oldWDelta{i} ;
+      oldWDelta{i} = WDelta;
     endfor
     
   endfor
