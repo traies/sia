@@ -52,8 +52,8 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
     
     # Update Weights
     for i = 1:h+1
-      WDelta = eta * V{i}' * Delta{i};
-      W{i} += WDelta + alfa * oldWDelta{i} ;
+      WDelta = eta * V{i}' * Delta{i} + alfa * oldWDelta{i};
+      W{i} += WDelta;
       oldWDelta{i} = WDelta;
     endfor
     
