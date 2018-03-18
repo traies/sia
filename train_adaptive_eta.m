@@ -5,29 +5,41 @@
 # W neural network weights
 # eta 
 # alfa
+# beta decrease factor for adaptive eta
+# k number of steps of a "consistent" decrease in the error
 
-function W = train(T, S, h, H, eta=0.001, alfa=0.9)
+function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
  W = {};
- oldWDelta = {};
  T_size = size(T)(2);
  samples = length(S);
  #  Consider bias in first layer size
  prev = T_size + 1;
  
+ #for adaptive eta
+ prev_err = Inf;
+ consistent_decrease_iters = k;
+ Delta_W = {};
+ initial_eta = eta;
+ initial_alfa = alfa;
+ 
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
    W{i} = rand(prev,H(i));
-   oldWDelta{i} = zeros(prev, H(i));
+   Delta_W{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
  W{h+1} = rand(prev, 1);
- oldWDelta{h+1} = zeros(prev, 1);
+ Delta_W{h+1} = zeros(prev, 1);
+ 
  exit = 0;
  iter = 0;
+ 
  while 1
-  # Samples are permutated on each iteration
+  
   err = 0;
+   
+  # Samples are permutated on each iteration
   for x = randperm(samples)
     V = {};
     # g'(h_i)
@@ -55,9 +67,9 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
     
     # Update Weights
     for i = 1:h+1
-      WDelta = eta * V{i}' * Delta{i} + alfa * oldWDelta{i};
+      WDelta = eta * V{i}' * Delta{i};
       W{i} += WDelta;
-      oldWDelta{i} = WDelta;
+      Delta_W{i} += WDelta;
     endfor
     
   endfor
@@ -65,22 +77,51 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
   # Check accuracy
   count = 0;
   for s = 1:samples
-    
     proy = evaluate(T(x, :), W);
-    
     # Check if proyection is OK. Add to counter.
     if( (S(s) > 0 && proy > 0) || (S(s) < 0 && proy <= 0))
       count = count + 1;
     endif
   endfor
   
-  printf("Iter %g, Success rate: %f\n", iter, count);
-  printf("Error: %f \n", err);
-  fflush(stdout);
-  # Check quadratic error.
+  # Break if all samples passed
   if count == samples
     break
   endif
+  
+  #adaptive eta
+  delta_err = err-prev_err;
+  if(delta_err < 0)
+    consistent_decrease_iters -= 1;
+    if(consistent_decrease_iters <= 0)
+      alfa = initial_alfa;
+      eta += alfa;
+    endif
+  elseif (delta_err > 0)
+    #reset conditions
+    consistent_decrease_iters = k;
+    eta -= eta*beta;
+    alfa = 0;
+    #reset weights
+    for o = 1:h+1
+      W{i} -= Delta_W{i};
+    endfor
+    if(eta < epsilon)
+      eta = initial_eta;
+    endif
+  endif
+  
+  prev_err = err;
+  #reset deltas for next epoch
+  for o = 1:h+1
+    Delta_W{i} *= 0;
+  endfor
+  
+  printf("Iter %g, Success rate: %f\n", iter, count);
+  printf("Error: %f \n", err);
+  printf("Eta: %f \n", eta);
+  fflush(stdout);
+  
   iter += 1;
   endwhile
   
