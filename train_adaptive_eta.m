@@ -77,9 +77,9 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
   # Check accuracy
   count = 0;
   for s = 1:samples
-    proy = evaluate(T(x, :), W);
+    proy = evaluate(T(s, :), W);
     # Check if proyection is OK. Add to counter.
-    if( (S(s) > 0 && proy > 0) || (S(s) < 0 && proy <= 0))
+    if (S(s)>= 0 && proy >= 0 || S(s)<0 && proy<0)
       count = count + 1;
     endif
   endfor
@@ -91,17 +91,16 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
   
   #adaptive eta
   delta_err = err-prev_err;
+  
   if(delta_err < 0)
     consistent_decrease_iters -= 1;
     if(consistent_decrease_iters <= 0)
-      alfa = initial_alfa;
-      eta += alfa;
+     eta += alfa  
     endif
   elseif (delta_err > 0)
     #reset conditions
     consistent_decrease_iters = k;
     eta -= eta*beta;
-    alfa = 0;
     #reset weights
     for o = 1:h+1
       W{i} -= Delta_W{i};
