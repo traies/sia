@@ -2,16 +2,17 @@
 # S expected output
 # h number of hidden layers
 # H hidden layer dimensions (bias not included)
+# out nodes in the outer layer
 # W neural network weights
 # eta 
 # alfa
 # beta decrease factor for adaptive eta
 # k number of steps of a "consistent" decrease in the error
 
-function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
+function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
  W = {};
  T_size = size(T)(2);
- samples = length(S);
+ samples = size(S)(1);
  #  Consider bias in first layer size
  prev = T_size + 1;
  
@@ -29,8 +30,8 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
- W{h+1} = rand(prev, 1);
- Delta_W{h+1} = zeros(prev, 1);
+ W{h+1} = rand(prev, out);
+ Delta_W{h+1} = zeros(prev, out);
  
  exit = 0;
  iter = 0;
@@ -58,7 +59,7 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
     V_1{h+2} = 1- tempV .** 2;
     Delta = {};
     # Find last delta (list indexes are backwards)
-    err += (S(x) - V{h+2}) ** 2;
+    err += (S(x) - V{h+2}) .** 2;
     Delta{h+1} =  V_1{h+2} .* (S(x) - V{h+2});
     # Backpropagation
     for i = h:-1:1
@@ -79,7 +80,7 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
   for s = 1:samples
     proy = evaluate(T(s, :), W);
     # Check if proyection is OK. Add to counter.
-    if (S(s)>= 0 && proy >= 0 || S(s)<0 && proy<0)
+    if (check_valid(S(s),proy))
       count = count + 1;
     endif
   endfor
@@ -93,22 +94,24 @@ function W = train_adaptive_eta(T, S, h, H, eta=0.001, alfa=0.2, beta=.2, k=5, e
   delta_err = err-prev_err;
   
   if(delta_err < 0)
-    consistent_decrease_iters -= 1;
     if(consistent_decrease_iters <= 0)
-     eta += alfa  
-    endif
-  elseif (delta_err > 0)
+      eta += alfa;
+    else 
+     consistent_decrease_iters -= 1;
+    endif 
+  elseif (delta_err >= 0)
     #reset conditions
     consistent_decrease_iters = k;
     eta -= eta*beta;
-    #reset weights
     for o = 1:h+1
+      #reset weights
       W{i} -= Delta_W{i};
     endfor
     if(eta < epsilon)
       eta = initial_eta;
     endif
   endif
+    
   
   prev_err = err;
   #reset deltas for next epoch
