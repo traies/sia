@@ -1,0 +1,5 @@
+train_adaptive_eta(T, S, 3, [4 , 3 , 2 ], 1, eta=0.005, alfa=0.1, beta=.4, k=50, epsilon = 0.0001) # 24
+train_adaptive_eta(T, S, 2, [8 , 4 ], 1, eta=0.005, alfa=0.09, beta=.3, k=50, epsilon = 0.0001) # 32
+train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.1, beta=.3, k=10, epsilon = 0.0001) # 24
+train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.1, beta=.5, k=20, epsilon = 0.0001) # 16
+train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.15, beta=.5, k=40, epsilon = 0.0001) # 12

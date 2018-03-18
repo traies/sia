@@ -59,7 +59,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
     V_1{h+2} = 1- tempV .** 2;
     Delta = {};
     # Find last delta (list indexes are backwards)
-    err += (S(x) - V{h+2}) .** 2;
+    
     Delta{h+1} =  V_1{h+2} .* (S(x) - V{h+2});
     # Backpropagation
     for i = h:-1:1
@@ -79,6 +79,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
   count = 0;
   for s = 1:samples
     proy = evaluate(T(s, :), W);
+    err += (S(s) - proy) .** 2;
     # Check if proyection is OK. Add to counter.
     if (check_valid(S(s),proy))
       count = count + 1;
@@ -86,7 +87,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
   endfor
   
   # Break if all samples passed
-  if count == samples
+  if count == samples || err < 15
     break
   endif
   
@@ -99,7 +100,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
     else 
      consistent_decrease_iters -= 1;
     endif 
-  elseif (delta_err >= 0)
+  elseif (delta_err > 0)
     #reset conditions
     consistent_decrease_iters = k;
     eta -= eta*beta;
