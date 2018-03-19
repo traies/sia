@@ -9,7 +9,7 @@
 # beta decrease factor for adaptive eta
 # k number of steps of a "consistent" decrease in the error
 
-function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
+function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
  W = {};
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -20,6 +20,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
  prev_err = Inf;
  consistent_decrease_iters = k;
  Delta_W = {};
+ oldWDelta = {};
  initial_eta = eta;
  initial_alfa = alfa;
  
@@ -27,12 +28,13 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
  for i = 1:h
    W{i} = rand(prev,H(i));
    Delta_W{i} = zeros(prev, H(i));
+   oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
  W{h+1} = rand(prev, out);
  Delta_W{h+1} = zeros(prev, out);
- 
+ oldWDelta{h+1} = zeros(prev, 1);
  exit = 0;
  iter = 0;
  
@@ -68,9 +70,10 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
     
     # Update Weights
     for i = 1:h+1
-      WDelta = eta * V{i}' * Delta{i};
+      WDelta = eta * V{i}' * Delta{i} + momentum * oldWDelta{i};
       W{i} += WDelta;
       Delta_W{i} += WDelta;
+      oldWDelta{i} = WDelta;
     endfor
     
   endfor
@@ -86,6 +89,9 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
     endif
   endfor
   
+  printf("Iter %g, Success rate: %f\n", iter, count);
+  printf("Error: %f \n", err);
+  printf("Eta: %f \n", eta);
   # Break if all samples passed
   if count == samples || err < 15
     break
@@ -120,9 +126,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, alfa=0.2, beta=.2, k
     Delta_W{i} *= 0;
   endfor
   
-  printf("Iter %g, Success rate: %f\n", iter, count);
-  printf("Error: %f \n", err);
-  printf("Eta: %f \n", eta);
+  
   fflush(stdout);
   
   iter += 1;

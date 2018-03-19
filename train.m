@@ -6,7 +6,7 @@
 # eta 
 # alfa
 
-function W = train(T, S, h, H, eta=0.001, alfa=0.9)
+function W = train(T, S, h, H, eta=10e-4, momentum=0.9)
  W = {};
  oldWDelta = {};
  T_size = size(T)(2);
@@ -46,7 +46,6 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
     V_1{h+2} = 1- tempV .** 2;
     Delta = {};
     # Find last delta (list indexes are backwards)
-    err += (S(x) - V{h+2}) ** 2;
     Delta{h+1} =  V_1{h+2} .* (S(x) - V{h+2});
     # Backpropagation
     for i = h:-1:1
@@ -55,7 +54,7 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
     
     # Update Weights
     for i = 1:h+1
-      WDelta = eta * V{i}' * Delta{i} ;
+      WDelta = eta * V{i}' * Delta{i} + momentum * oldWDelta{i};
       W{i} += WDelta;
       oldWDelta{i} = WDelta;
     endfor
@@ -67,13 +66,13 @@ function W = train(T, S, h, H, eta=0.001, alfa=0.9)
   for s = 1:samples
     
     proy = evaluate(T(s, :), W);
-    
+    err += (S(s) - proy) .** 2;
     # Check if proyection is OK. Add to counter.
     if( (S(s) > 0 && proy > 0) || (S(s) < 0 && proy <= 0))
       count = count + 1;
     endif
   endfor
-  
+  err /= 2 * samples;
   printf("Iter %g, Success rate: %f\n", iter, count);
   printf("Error: %f \n", err);
   fflush(stdout);
