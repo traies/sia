@@ -9,7 +9,7 @@
 # beta decrease factor for adaptive eta
 # k number of steps of a "consistent" decrease in the error
 
-function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.0001, error_epsilon = .001)
+function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
  W = {};
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -22,6 +22,9 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.
  oldWDelta = {};
  initial_eta = eta;
  initial_alfa = alfa;
+ 
+ min_err = Inf;
+ W_min = {};
  
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
@@ -87,6 +90,12 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.
     err += v*v';
   endfor
   err /= 2*samples;
+  
+  if (err < min_err)
+    W_min = W;
+    min_err = err;
+  endif
+  
 
   printf("Iter %g, Error: %f \n",iter, err);
   printf("Eta: %f \n", eta);
@@ -123,7 +132,8 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.
   
   prev_err = err;
   iter += 1;
-  endwhile
+ endwhile
+ W = W_min;
   
  endfunction
  
