@@ -9,7 +9,7 @@
 # beta decrease factor for adaptive eta
 # k number of steps of a "consistent" decrease in the error
 
-function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0.2, beta=.2, k=5, epsilon = 0.0001)
+function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.0001, error_epsilon = .001)
  W = {};
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -19,7 +19,6 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0
  #for adaptive eta
  prev_err = Inf;
  consistent_decrease_iters = k;
- Delta_W = {};
  oldWDelta = {};
  initial_eta = eta;
  initial_alfa = alfa;
@@ -27,21 +26,24 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
    W{i} = rand(prev,H(i));
-   Delta_W{i} = zeros(prev, H(i));
    oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
  W{h+1} = rand(prev, out);
- Delta_W{h+1} = zeros(prev, out);
  oldWDelta{h+1} = zeros(prev, 1);
- exit = 0;
  iter = 0;
- 
  while 1
   
+  Delta_W = {};
+  prev = T_size + 1;
+  for i = 1:h
+   Delta_W{i} = zeros(prev, H(i));
+   prev = H(i) + 1;
+  endfor
+  Delta_W{h+1} = zeros(prev, out);
+  
   err = 0;
-   
   # Samples are permutated on each iteration
   for x = randperm(samples)
     V = {};
@@ -78,23 +80,21 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0
     
   endfor
   
-  # Check accuracy
-  count = 0;
+  # Compute global error
   for s = 1:samples
     proy = evaluate(T(s, :), W);
-    err += (S(s) - proy) .** 2;
-    # Check if proyection is OK. Add to counter.
-    if (check_valid(S(s),proy))
-      count = count + 1;
-    endif
+    v = (S(s) - proy);
+    err += v*v';
   endfor
-  
-  printf("Iter %g, Success rate: %f\n", iter, count);
-  printf("Error: %f \n", err);
+  err /= 2*samples;
+
+  printf("Iter %g, Error: %f \n",iter, err);
   printf("Eta: %f \n", eta);
+  fflush(stdout);
+  
   # Break if all samples passed
-  if count == samples || err < 15
-    break
+  if err < error_epsilon
+    break;
   endif
   
   #adaptive eta
@@ -103,6 +103,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0
   if(delta_err < 0)
     if(consistent_decrease_iters <= 0)
       eta += alfa;
+      consistent_decrease_iters = k;
     else 
      consistent_decrease_iters -= 1;
     endif 
@@ -115,20 +116,12 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.001, momentum=0.9, alfa=0
       W{i} -= Delta_W{i};
     endfor
     if(eta < epsilon)
-      eta = initial_eta;
+      break;
     endif
   endif
     
   
   prev_err = err;
-  #reset deltas for next epoch
-  for o = 1:h+1
-    Delta_W{i} *= 0;
-  endfor
-  
-  
-  fflush(stdout);
-  
   iter += 1;
   endwhile
   
