@@ -12,7 +12,7 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E state] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
+function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
  W = {};
  E = [];
  state = rand("state");
@@ -32,6 +32,7 @@ function [W E state] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.
  
  min_err = Inf;
  W_min = {};
+ min_iter = 0;
  
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
@@ -102,6 +103,7 @@ function [W E state] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.
   if (err < min_err)
     W_min = W;
     min_err = err;
+    min_iter = iter;
   endif
   
 
@@ -109,7 +111,6 @@ function [W E state] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.
   printf("Eta: %f \n", eta);
   fflush(stdout);
   
-  # Break if all samples passed
   if err < error_epsilon
     break;
   endif
