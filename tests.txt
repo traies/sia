@@ -3,3 +3,5 @@ train_adaptive_eta(T, S, 2, [8 , 4 ], 1, eta=0.005, alfa=0.09, beta=.3, k=50, ep
 train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.1, beta=.3, k=10, epsilon = 0.0001) # 24
 train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.1, beta=.5, k=20, epsilon = 0.0001) # 16
 train_adaptive_eta(T, S, 2, [8 , 3 ], 1, eta=0.05, alfa=0.15, beta=.5, k=40, epsilon = 0.0001) # 12
+train_adaptive_eta(T, S, 2, [8 5], 1, eta=0.005, momentum=0, alfa=0.001, beta=.5, k=20, epsilon = 0.00001, error_epsilon = .005); # 10e-4 w/o resetting after eta increase
+[W E state] = train_adaptive_eta(Tt, St, 2, [8 6], 1, eta=0.5, momentum=0, alfa=0.05, beta=.2, k=5, epsilon = 0.00001, error_epsilon = .005); # very fast , idem prev

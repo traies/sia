@@ -3,16 +3,23 @@
 # h number of hidden layers
 # H hidden layer dimensions (bias not included)
 # out nodes in the outer layer
-# W neural network weights
 # eta 
 # alfa
 # beta decrease factor for adaptive eta
 # k number of steps of a "consistent" decrease in the error
 
-function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
+# W neural network weights
+# E mean quadratic error over time
+# state the state of the random number generator
+
+function [W E state] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
  W = {};
+ E = [];
+ state = rand("state");
+ 
  T_size = size(T)(2);
  samples = size(S)(1);
+ 
  #  Consider bias in first layer size
  prev = T_size + 1;
  
@@ -90,6 +97,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.
     err += v*v';
   endfor
   err /= 2*samples;
+  E(end+1) = err;
   
   if (err < min_err)
     W_min = W;
@@ -112,7 +120,7 @@ function W = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.
   if(delta_err < 0)
     if(consistent_decrease_iters <= 0)
       eta += alfa;
-      consistent_decrease_iters = k;
+      #consistent_decrease_iters = k;
     else 
      consistent_decrease_iters -= 1;
     endif 
