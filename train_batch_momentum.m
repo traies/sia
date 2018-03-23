@@ -12,10 +12,10 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E state] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=0.9, error_epsilon = .001)
+function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=0.9, error_epsilon = .001)
  W = {};
  E = [];
- state = rand("state");
+ seed = rand("seed");
  
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -23,10 +23,10 @@ function [W E state] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=
  #  Consider bias in first layer size
  prev = T_size + 1;
  
- #for adaptive eta
  oldWDelta = {};
- 
+
  min_err = Inf;
+ min_iter = Inf;
  W_min = {};
  
  # Weights initialization (consider bias in each hidden layer)
@@ -100,8 +100,13 @@ function [W E state] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=
   if (err < min_err)
     W_min = W;
     min_err = err;
+    min_iter = iter;
   endif
   
+  if (err < error_epsilon)
+    break; 
+  endif
+    
 
   printf("Iter %g, Error: %f \n",iter, err);
   fflush(stdout);

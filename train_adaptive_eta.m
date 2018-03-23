@@ -12,10 +12,10 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
+function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
  W = {};
  E = [];
- state = rand("state");
+ seed = rand("seed");
  
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -23,15 +23,12 @@ function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=
  #  Consider bias in first layer size
  prev = T_size + 1;
  
- #for adaptive eta
- prev_err = Inf;
- consistent_decrease_iters = k;
+ #for momentum
  oldWDelta = {};
- initial_eta = eta;
- initial_alfa = alfa;
  
  min_err = Inf;
  W_min = {};
+ min_iter = 0;
  min_iter = 0;
  
  # Weights initialization (consider bias in each hidden layer)
@@ -40,21 +37,24 @@ function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=
    oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
+ 
  #  Initialize last layer
  W{h+1} = rand(prev, out);
  oldWDelta{h+1} = zeros(prev, 1);
+ 
+ #for adaptive eta
+ prev_err = Inf;
+ prev_W = W;
+ consistent_decrease_iters = k;
+ 
+ 
+ 
  iter = 0;
  while 1
   
-  Delta_W = {};
-  prev = T_size + 1;
-  for i = 1:h
-   Delta_W{i} = zeros(prev, H(i));
-   prev = H(i) + 1;
-  endfor
-  Delta_W{h+1} = zeros(prev, out);
-  
+  prev_W = W;
   err = 0;
+  
   # Samples are permutated on each iteration
   for x = randperm(samples)
     V = {};
@@ -85,7 +85,6 @@ function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=
     for i = 1:h+1
       WDelta = eta * V{i}' * Delta{i} + momentum * oldWDelta{i};
       W{i} += WDelta;
-      Delta_W{i} += WDelta;
       oldWDelta{i} = WDelta;
     endfor
     
@@ -129,10 +128,7 @@ function [W E state min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=
     #reset conditions
     consistent_decrease_iters = k;
     eta -= eta*beta;
-    for o = 1:h+1
-      #reset weights
-      W{i} -= Delta_W{i};
-    endfor
+    W = prev_W;
     if(eta < epsilon)
       break;
     endif
