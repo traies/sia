@@ -12,7 +12,8 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=0.9, error_epsilon = .001)
+function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, eta=0.01, momentum=0.9, error_epsilon = .001, 
+                                                            max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5)
  W = {};
  E = [];
  seed = rand("seed");
@@ -25,18 +26,17 @@ function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, eta
  
  oldWDelta = {};
 
- min_err = Inf;
- min_iter = Inf;
+ min_err = min_iter = prev_err = Inf;
  W_min = {};
  
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
-   W{i} = rand(prev,H(i));
+   W{i} = randinterv(prev,H(i),lo_rand_interv,hi_rand_interv);
    oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
- W{h+1} = rand(prev, out);
+ W{h+1} = randinterv(prev, out,lo_rand_interv,hi_rand_interv);
  oldWDelta{h+1} = zeros(prev, 1);
  iter = 0;
  while 1
@@ -103,15 +103,18 @@ function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, eta
     min_iter = iter;
   endif
   
-  if (err < error_epsilon)
-    break; 
-  endif
-    
-
+ 
   printf("Iter %g, Error: %f \n",iter, err);
   fflush(stdout);
 
+  #break conditions: if reached local minimum
+  if(iter >= max_iters || abs(prev_err-err) < 1e-20 || err < error_epsilon)
+    break;
+  endif
+  
   iter += 1;
+  prev_err = err;
+  
  endwhile
  W = W_min;
   

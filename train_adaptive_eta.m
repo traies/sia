@@ -12,7 +12,10 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
+function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, 
+                                                          epsilon = 0.00001, error_epsilon = .001, max_iters = 10000, 
+                                                          lo_rand_interv=-.5, hi_rand_interv=.5)
+ 
  W = {};
  E = [];
  seed = rand("seed");
@@ -33,13 +36,13 @@ function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0
  
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
-   W{i} = rand(prev,H(i));
+   W{i} = randinterv(prev,H(i),lo_rand_interv,hi_rand_interv);
    oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  
  #  Initialize last layer
- W{h+1} = rand(prev, out);
+ W{h+1} = randinterv(prev, out,lo_rand_interv,hi_rand_interv);
  oldWDelta{h+1} = zeros(prev, 1);
  
  #for adaptive eta
@@ -120,7 +123,7 @@ function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0
   if(delta_err < 0)
     if(consistent_decrease_iters <= 0)
       eta += alfa;
-      #consistent_decrease_iters = k;
+      consistent_decrease_iters = k;
     else 
      consistent_decrease_iters -= 1;
     endif 
@@ -132,8 +135,13 @@ function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, eta=0
     if(eta < epsilon)
       break;
     endif
+  else
+    break;  
   endif
-    
+  
+  if(iter >= max_iters)
+    break;  
+  endif
   
   prev_err = err;
   iter += 1;

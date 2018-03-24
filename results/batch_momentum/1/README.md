@@ -1,6 +1,10 @@
 H = [30]
 [W E seed min_err min_iter] = train_batch_momentum(Tt, St, length(H), H, 1, eta=0.001, momentum=.9, error_epsilon = .0009);
 
+UTILIZANDO W INICIAL ENTRE 0 Y 1
+
+min_err == iter
+
 ##########################
 
 ERROR RATES
