@@ -1,0 +1,115 @@
+\documentclass[12pt, twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{a4paper,margin=0.8in}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{chngcntr}
+\usepackage{amsfonts}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\cfoot{Página \thepage}
+\counterwithin*{equation}{subsection}
+
+\begin{document}
+	\title{Generalización de Terrenos con Redes Neuronales Multicapa \\ 
+		   \large{\textsc{Sistemas de Inteligencia Artificial}} \\
+		   \normalsize{\textsc{Instituto Tecnológico de Buenos Aires}}}
+	\author{
+		\textsc{Garrigó}, Mariano \\
+		\texttt{54393}
+		\and
+		\textsc{Raies}, Tomás A. \\
+		\texttt{56099}
+		\and
+		\textsc{Saqués}, M. Alejo \\
+		\texttt{56047} 
+	}
+	\date{}
+	\maketitle
+	
+	\begin{abstract}
+		Se ha analizado el potencial de una red neuronal multicapa supervisada a los efectos de aprender la forma de un terreno, y, posteriormente, generalizar sobre la misma.
+		
+		Se ha evaluado una serie de variaciones sobre el algoritmo de \textit{backpropagation}, particularmente \textit{adaptive eta} y \textit{momentum}, como así también combinaciones de ambas técnicas. Asimismo, se han comparado los resultados obtenidos actualizando los pesos de la red tanto de manera incremental como en \textit{batch}. 
+		
+		Por último, se han comparado estas técnicas con el estado del arte en algoritmos de generación aleatoria de terrenos, como el \textit{Diamond-Square Algorithm} (DSA). El objetivo ha sido probar las capacidades de una red neuronal de aprender terrenos con una \textit{apariencia} lo más aleatoria posible, tal como busca lograr DSA. 
+	\end{abstract}
+	
+	\paragraph{Palabras clave:} Redes multicapa supervisadas, \textit{feature scaling}, \textit{backpropagation}, \textit{adaptive eta}, \textit{momentum}, actualización de pesos incremental / en \textit{batch}, funciones de activación, \textit{Diamond-Square Algorithm}.
+	
+	\section{Descripción del entrenamiento}
+	
+	\paragraph{} En esta sección, se discutirán las decisiones tomadas por el Equipo para entrenar redes neuronales. Esto incluye tanto toda la instancia de pre-procesamiento, como así también el entrenamiento propiamente dicho. 
+	
+	\subsection{Pre-procesamiento}
+	
+	\subsubsection{\textit{Feature scaling}}
+	
+	\paragraph{} Dado que las imágenes de las funciones de activación son intervalos en $\mathbb{R}^{2}$ ($tanh : \mathbb{R} \to \left[-1, 1\right]$ y $logistic : \mathbb{R} \to \left[0, 1\right]$), si los datos del \textit{set} de entrenamiento no se encuentran dentro de dichos intervalos, cierto ajuste es necesario.
+	
+	\paragraph{} Para ello, se utiliza \textit{feature scaling} para estandarizar muestras en algún intervalo deseado. De todas las variaciones de dicho método, se utiliza el \textit{rescaling} de datos:
+	
+	\begin{align}
+		x_{i}^{'} = \frac{x_{i}-min(X)}{max(X)-min(X)}(b-a)+a
+	\end{align}
+	
+	\paragraph{} Donde $X$ es el espacio de muestras a estandarizar, $a$ y $b$ son las cotas inferior y superior del intervalo de llegada, respectivamente. 
+	
+	\subsubsection{Selección de muestras de entrenamiento}
+	
+	\paragraph{} Dado que una de las características que se quiere probar es la capacidad de generalización de la red, es razonable que parte de las muestras del terreno se utilicen para verificar que la red, efectivamente, aprendió el problema. Por ende, se ha decidido utilizar el $90\%$ de las muestras para el entrenamiento, y un $10\%$ para testeo. Los patrones de cada conjunto se toman de manera no determinística. Se debe notar que la proporción es un dato parametrizable. 
+	
+	\subsection{Implementaciones de \textit{backpropagation}}
+	
+	\paragraph{} A continuación, se elaborará sobre los diferentes algoritmos utilizados para entrenar las redes neuronales. Las descripciones atacarán fundamentalmente aquellos rasgos distintivos de los mismos, que emanan de decisiones tomadas por el Equipo durante el proceso de desarrollo.
+	
+	\paragraph{Nota:} El error cuadrático medio sobre el conjunto de datos de entrenamiento se calcula, para cada versión del algoritmo, después de ejecutar cada \textit{epoch}.
+	
+	\subsubsection{Algoritmo incremental con \textit{adaptive eta} y \textit{momentum}}
+	
+	\paragraph{} Tal como su nombre lo indica, las actualizaciones de pesos en este algoritmo se realizan patrón a patrón. Esto lleva consigo la necesidad de iterar sobre todos los patrones en cada \textit{epoch}, desaprovechándose así las mejoras que realiza \textit{Octave/Matlab} sobre el producto matricial. Esto se verá reflejado en la lentitud de ejecución de cada \textit{epoch} por parte de este algoritmo, relativa a la versión en \textit{batch} que se mencionará a continuación.
+	
+	\paragraph{} En lo que respecta al orden de las muestras de entrenamiento en cada \textit{epoch}, se ha tomado la decisión de presentarlas en un orden no determinístico, dado que se ha observado que, de esta forma, es menos probable que el algoritmo se atasque en mínimos locales. 
+	
+	\paragraph{} Por último, se han considerado dos variaciones sobre el proceso de eta adaptativo, las cuales versan sobre si después de $k$ iteraciones en las que el error cuadrático medio descendió consistentemente, dicho contador se restablece tras incrementar el eta o si se prosigue incrementando \textit{epoch} tras \textit{epoch} hasta que haya un incremento en el error. Se ha notado que ambas variaciones presentan comportamientos similares si para la primera versión se establecen valores de $k$ \textit{pequeños} y, para la segunda versión, \textit{grandes}. Para el caso, \textit{pequeños} y \textit{grandes} valores se refieren a cifras en el orden de $10^{1}$ y $10^{2}$ respectivamente. Se ha decidido utilizar la versión que restablece $k$ tras cada incremento.
+	
+	\paragraph{} En lo que respecta a las condiciones de corte, el algoritmo retorna cuando:
+	
+	\begin{enumerate}
+		\item Se ha llegado al máximo de iteraciones,
+		\item Se ha llegado al valor del error cuadrático medio deseado,
+		\item El eta se ha hecho $\sim 0$. 
+		\item La diferencia entre el error cuadrático medio anterior y el actual es $0$.
+	\end{enumerate}
+	
+	\paragraph{Nota:} El ítem $3.$ refleja la situación en la que el error ha crecido consistentemente, haciendo que tras sucesivas disminuciones del eta dicho valor se acerque a $0$. 
+	
+	
+	\subsubsection{Algoritmo en \textit{batch} con \textit{momentum}}
+	
+	\paragraph{} En este algoritmo, las actualizaciones de pesos se realizan tras cada \textit{epoch}. A diferencia del caso anterior, esto permite tomar las muestras del set de entrenamiento de manera conjunta, sin tener que iterar por cada patrón. De esta forma, se aprovechan las mejoras que \textit{Octave/Matlab} realizan sobre el producto matricial, haciendo que la ejecución de cada \textit{epoch} sea notoriamente más rápida que en el algoritmo anterior. 
+	
+	\paragraph{} En lo que respecta a las condiciones de corte, el algoritmo retorna cuando:
+	
+	\begin{enumerate}
+		\item Se ha llegado al máximo de iteraciones,
+		\item Se ha llegado al valor del error cuadrático medio deseado,
+		\item La diferencia entre el error cuadrático medio anterior y el actual es $\sim 0$.
+	\end{enumerate}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+\end{document}
