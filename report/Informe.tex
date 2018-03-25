@@ -107,7 +107,7 @@
 	
 	\subsubsection{Algoritmo en \textit{batches} de tamaño parametrizable}
 	
-	\paragraph{} La idea de esta versión de \textit{batch} es idéntica a la anterior, salvo que los \textit{batches} se toman de a tamaños parametrizables.
+	\paragraph{} La idea de esta versión de \textit{batch} es idéntica a la anterior, salvo que los \textit{batches} se toman de a tamaños parametrizables. Esta implementación busca aprovechar las mejoras en eficiencia del producto de matrices de menores dimensiones. 
 	
 	\newpage
 	
@@ -127,7 +127,7 @@
 		\item $k$: constante de decrecimiento consistente
 		\item $\epsilon$: cota inferior para $\eta$ (condición de corte)
 		\item $\epsilon_{e}$: condición de corte del error cuadrático medio
-		\item $max_iters$: número máximo de \textit{epochs}.
+		\item $max_{iters}$: número máximo de \textit{epochs}.
 		
 	\end{itemize}
 	
@@ -147,7 +147,7 @@
 		\item $k = 5$
 		\item $\epsilon = 0.00001$
 		\item $\epsilon_{e} = .0001$
-		\item $max_iters = 10000$
+		\item $max_{iters} = 10000$
 	\end{itemize}
 	
 	\paragraph{} En este primer caso de análisis, se ha logrado obtener una red neuronal que aproxima el terreno con un error cuadrático medio sobre el \textit{set} de entrenamiento de $6.5*10^{-4}$. Es decir, la ejecución del algoritmo finalizó por haberse alcanzado el máximo de iteraciones. El \textit{set} de pesos que menor error cuadrático medio logró se correspondió con la iteración $9954$.
@@ -251,7 +251,107 @@
 	\paragraph{} Otro aspecto interesante es el abrupto descenso del error en torno a la iteración 4000, sobre todo teniendo en cuenta que la pendiente de la curva, hasta ese momento, era similar a lo que se encuentra en torno a la iteración 6000, es decir, después de dicho suceso. Queda como interrogante el analizar si un descenso como tal podría haber ocurrido de haberse proseguido la ejecución. De todas formas, se considera que el error alcanzado resuelve con creces el objetivo del problema con errores mínimos, tal como se ha discutido en secciones anteriores. 
 
 	
-
+	\subsection{Algoritmo en \textit{batch} con \textit{momentum}}
+	
+	\paragraph{} En este apartado se discutirán los resultados obtenidos al entrenar la red neuronal realizando las actualizaciones de pesos en \textit{batch}.
+	
+	\subsubsection{Parámetros y resultados generales} 
+	
+	\begin{itemize}
+		\item $f = \tanh$
+		\item $H = \left[10, 10\right]$
+		\item $\eta = 0.001$
+		\item $momentum = .9$
+		\item $\epsilon_{e} = .0001$
+		\item $max_{iters} = 100000$
+	\end{itemize}
+	
+	\paragraph{} Si se compara el \textit{set} de parámetros iniciales con el del caso anterior, se podrá notar que el $\eta$ es considerablemente más pequeño. Esta decisión se puede asociar con el factor de que, a valores de $\eta$ \textit{grandes} (mayores a $10^{-2}$), el algoritmo tiende a atascarse en mínimos locales. 
+	
+	\paragraph{} Este último comentario está estrechamente vinculado con la decisión de utilizar \textit{momentum}. Dado que \textit{momentum} busca acelerar el proceso de entrenamiento adicionando una proporción de $\Delta W_{prev}$ (en particular, $0.9$), valores de $\eta$ relativamente \textit{grandes} pueden hacer desviar al algoritmo del camino correcto, así atascándose en mínimos locales o, incluso, aumentando el error indefinidamente $-$esto último se ha notado en algunos casos utilizando \textit{momentum} en el algoritmo incremental con \textit{adaptive eta}. Visto esto, se puede decir que la decisión tomada con respecto a los valores iniciales, además de $-$ como se verá $-$ funcionar en la práctica, tiene sus fundamentos teóricos.  
+	
+	\paragraph{} Con respecto a los resultados de la ejecución, se ha obtenido un error cuadrático medio sobre el conjunto de datos de entrenamiento de $3.26*10^{-4}$, es decir, prácticamente la mitad del error obtenido en el caso anterior. Sin embargo, es de notar que dicho valor fue conseguido en $100000$ \textit{epochs}, lo cual supuso un tiempo de entrenamiento de $01:15$ horas en una computadora con un procesador \textbf{Intel Core i7-4700MQ}. Este tiempo supera con creces al del caso anterior, que no superó la media hora. El análisis de la generalización de esta red ayudará a discernir entre qué red presenta una mejor relación resultados/esfuerzo computacional. 
+	
+	\subsubsection{Tasas de éxito}
+	
+	\paragraph{} Al igual que el caso anterior, se buscará analizar dentro de qué intervalos la red obtenida generaliza correctamente datos de prueba, es decir, no vistos durante el entrenamiento. 
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{ll}
+			\hline
+			Épsilon & Éxito ($\%$)\\ \hline
+			.05     & 88.9  \\
+			.06     & 93.4    \\
+			.07     & 95.6  \\
+			.08     & 97.8  \\
+			.09     & 100  \\
+			.1      & 100  \\ \hline
+		\end{tabular}
+		\caption{Tasas de éxito}
+		\label{ex2}
+	\end{table}
+	
+	\paragraph{} Como podrá verse, a diferencia del caso anterior, todas las muestras de prueba son generalizadas correctamente en un intervalo de $\pm 0.1$, teniendo entorno a un $89\%$ de éxito incluso con intervalos el doble de pequeños. Analizando el último caso mencionado, este valor es alrededor de un $14\%$ mejor que su equivalente en los resultados del algoritmo anterior. 
+	
+	\subsubsection{Errores cometidos en el \text{set} de comparación}
+	
+	\paragraph{} Algunas de las cifras que describen a los resultados del \textit{set} de comparación son las siguientes:
+	
+	\begin{itemize}
+		\item $max(D) = 0.085488$
+		\item $min(D) = 9.3254*10^{-4}$
+		\item $mean(D) = 0.021261$
+	\end{itemize}
+	
+	\paragraph{} El valor que más dista del obtenido en la ejecución anterior es el $min(D)$, que se aproxima a ser 1 orden de magnitud inferior a su equivalente del caso anterior. Por lo demás, los otros valores son, razonablemente inferiores, siendo la media de la diferencia entre los valores esperado y calculado inferior entorno a $\frac{1}{3}$. 
+	
+	\paragraph{} El siguiente gráfico muestra los errores de cada coordenada:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8.5cm]{../results/batch_momentum/2/bar_batch.png}
+		\caption{$D_i$}
+		\label{di2}
+	\end{figure}
+	
+	\paragraph{} Mediante una simple inspección de la gráfica en \ref{di2}, comparándola con su equivalente anterior (\ref{di1}), se puede percibir que la cantidad de \textit{picos} $-$ barras cuya longitud es más del doble que el resto $-$ no solamente es inferior, sino que son de menor magnitud. 
+	
+	\paragraph{} De todas formas, se procederá a realizar el mismo análisis con respecto a la ubicación de los puntos con generalización más deficiente:
+	
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lll}
+			\hline
+			Muestra & \multicolumn{1}{c}{X} & \multicolumn{1}{c}{Y} \\ \hline
+			7      & 1             & 0.58233             \\
+			16       & 1                    & 0.82133              \\
+			14      & -0.14806                     & -0.35267              \\
+			41       & 0.94275              & -0.24045             \\ \hline
+		\end{tabular}
+		\caption{Puntos de mayor $D_{i}$}
+		\label{p2}
+	\end{table}
+	
+	\paragraph{} Como podrá notarse en el cuadro \ref{p2}, las conclusiones que se pueden extraer son similares a las encontradas en (\ref{p1}). Las muestras $16$ y $41$ se encuentra aproximadamente en dos diferentes puntas, el caso $7$ sobre la mitad de un borde, y el caso $14$ en alguna región de alto gradiente. La conclusión que se puede extraer a propósito de esto es que más puntos pueden ser necesarios en estas regiones si se precisa un muy buen nivel de detalle, y que las dificultades son independientes de los algoritmos utilizados. Esto no quita que no exista una estructura de red neuronal que tenga un mejor potencial para aprender dichas regiones, pero se afirma que, de las decenas de configuraciones probadas, la que se presenta es la que mejores resultados ha exhibido. 
+	
+	\subsubsection{Análisis del error cuadrático medio}
+	
+	\paragraph{} Para concluir el análisis de los resultados para esta ejecución, a continuación se discutirá el comportamiento del error cuadrático medio en función del tiempo. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/batch_momentum/2/log_batch.png}
+		\caption{Error cuadrático medio}
+		\label{error2}
+	\end{figure}
+	
+	\paragraph{} Lo que sin lugar a dudas impacta al observar esta gráfica es la periodicidad en con la que ocurren picos muy significativos en el error. Sin embargo, es de notar que la magnitud de dichos saltos tiende a decrecer en el tiempo, para lograr que el error tenga una tendencia generalmente decreciente. 
+	
+	\paragraph{} Se puede observar que, dentro de las primeras $20000$ iteraciones, los errores oscilan entre valores de $9*10^{-4}$ ($\exp(-7)$) y $6.7*10^{-3}$ ($\exp(-5)$), lo cual representa saltos de 1 orden de magnitud. 
+	
+	\paragraph{} Por último, puede notarse como hacia la iteración 80000 hubo un marcado incremento en la tasa de decrecimiento del error cuadrático medio, para luego asentarse en niveles comparados a los anteriores. 
 	
 	
 	
