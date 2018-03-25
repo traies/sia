@@ -105,7 +105,7 @@
 		\item La diferencia entre el error cuadrático medio anterior y el actual es $\sim 0$.
 	\end{enumerate}
 	
-	\subsubsection{Algoritmo en \textit{batches} de tamaño parametrizable}
+	\subsubsection{Algoritmo en \textit{batches} parametrizables}
 	
 	\paragraph{} La idea de esta versión de \textit{batch} es idéntica a la anterior, salvo que los \textit{batches} se toman de a tamaños parametrizables. Esta implementación busca aprovechar las mejoras en eficiencia del producto de matrices de menores dimensiones. 
 	
@@ -138,7 +138,7 @@
 	\subsubsection{Parámetros y resultados generales} 
 	
 	\begin{itemize}
-		\item $f = \tanh$
+		\item $f = \tanh(x)$
 		\item $H = \left[10, 10\right]$
 		\item $\eta = 0.1$
 		\item $momentum = 0$
@@ -146,7 +146,7 @@
 		\item $\beta = 0.1$
 		\item $k = 5$
 		\item $\epsilon = 0.00001$
-		\item $\epsilon_{e} = .0001$
+		\item $\epsilon_{e} = 0.0001$
 		\item $max_{iters} = 10000$
 	\end{itemize}
 	
@@ -258,11 +258,11 @@
 	\subsubsection{Parámetros y resultados generales} 
 	
 	\begin{itemize}
-		\item $f = \tanh$
+		\item $f = \tanh(x)$
 		\item $H = \left[10, 10\right]$
 		\item $\eta = 0.001$
-		\item $momentum = .9$
-		\item $\epsilon_{e} = .0001$
+		\item $momentum = 0.9$
+		\item $\epsilon_{e} = 0.0001$
 		\item $max_{iters} = 100000$
 	\end{itemize}
 	
@@ -352,6 +352,90 @@
 	\paragraph{} Se puede observar que, dentro de las primeras $20000$ iteraciones, los errores oscilan entre valores de $9*10^{-4}$ ($\exp(-7)$) y $6.7*10^{-3}$ ($\exp(-5)$), lo cual representa saltos de 1 orden de magnitud. 
 	
 	\paragraph{} Por último, puede notarse como hacia la iteración 80000 hubo un marcado incremento en la tasa de decrecimiento del error cuadrático medio, para luego asentarse en niveles comparados a los anteriores. 
+	
+	\subsection{Algoritmo en \textit{batches} parametrizables}
+	
+	\paragraph{} Por último, se analizarán algunas diferencias relevantes entre la implementación de \textit{batches} de tamaño fijo contra los parametrizables.
+	
+	\subsubsection{Parámetros y resultados generales} 
+	
+	\begin{itemize}
+		\item $f = \tanh(x)$
+		\item $H = \left[10, 10\right]$
+		\item $\eta = 0.001$
+		\item $momentum = 0.9$
+		\item $\epsilon_{e} = 0.0001$
+		\item $max_{iters} = 15000$
+	\end{itemize}
+	
+	\paragraph{} El objetivo de esta ejecución fue observar la evolución del error cuadrático medio, a los efectos de compararla con los resultados anteriores. Por ende, se realizó únicamente el $15\%$ de las iteraciones que el caso anterior. Por lo demás, todos los demás valores iniciales permanecieron inalterados. 
+	
+	\paragraph{} En $15000$ \textit{epochs}, se ha logrado un error de $4.22*10^{-4}$, es decir, un punto medio entre las dos ejecuciones anteriores. Este resultado se la logrado en $00:10:30$ minutos, en la misma computadora que el caso anterior. 
+	
+	\subsubsection{Tasas de éxito}
+	
+	\paragraph{} Las tasas de éxito para este caso fueron las siguientes:
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{ll}
+			\hline
+			Épsilon & Éxito ($\%$)\\ \hline
+			.05     & 77.8  \\
+			.06     & 88.9    \\
+			.07     & 95.6  \\
+			.08     & 97.8  \\
+			.09     & 100  \\ 
+			.1      & 100  \\ \hline 
+		\end{tabular}
+		\caption{Tasas de éxito}
+		\label{ex3}
+	\end{table}
+	
+	\paragraph{} Es decir, si bien resultaron ser sensiblemente inferiores al caso anterior, esta red logra $100\%$ de aciertos con un intervalo de error idéntico, de $\pm 0.09$. Esto en una fracción del tiempo de ejecución.
+	
+	\subsubsection{Datos significativos del \textit{set} de comparación}
+	
+	\paragraph{} Las cifras significativas del \textit{set} de comparación son las siguientes:
+	
+	\begin{itemize}
+		\item $max(D) = 0.084863$
+		\item $min(D) = 0.0011897$
+		\item $mean(D) = 0.028660$
+	\end{itemize} 
+	
+	\paragraph{} Peculiarmente, el máximo de las diferencias es muy sensiblemente inferior al del caso anterior, mientras que el mínimo es un orden de magnitud superior. La media, si bien es superior a la observada en el caso anterior, sigue siendo considerablemente mejor que el primer caso analizado. 
+	
+	\subsubsection{Análisis del error cuadrático medio}
+	
+	\paragraph{} Por último, lo más interesante para este caso se encuentra en la gráfica del error cuadrático medio. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/batch_variable/1/log_batch.png}
+		\caption{Error cuadrático medio}
+		\label{error3}
+	\end{figure}
+	
+	\paragraph{} Como podrá verse, a diferencia de los casos anteriores, no se observan saltos en los valores del error cuadrático medio. Esto puede estar vinculado con una elección acertada de los pesos iniciales que, si bien son inicializados de manera no determinística, ligeros cambios pueden guiar a resultados más precisos o, en este caso, con un descenso del error más suave. 
+	
+	\paragraph{} Como detalle peculiar, llama la atención lo que puede observarse entorno a la iteración 2000: un pequeño estancamiento en un mínimo local que fue subsanado rápidamente por la suma de pesos tras cierta \textit{epoch}. Es razonable pensar que, sin el accionar del \textit{momentum}, dicho cambio pudo no haber existido. 
+	
+	\subsection{Función logística}
+	
+	\paragraph{} Como se ha observado, en ninguno de los casos anteriores se ha utilizado la función logística como función de activación. A continuación se exhibe un gráfico del comportamiento observado en la gran mayoría de los casos con los que se ha probado dicha función.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/why_not_log.jpg}
+		\caption{Error cuadrático medio}
+		\label{wnl}
+	\end{figure}
+	
+	\paragraph{} Para esta ejecución, se han utilizado los mismos valores iniciales de la sección 2. de este apartado, con la diferencia que la función de activación es la logística. 
+	
+	\paragraph{} La gráfica muestra claramente un comportamiento errático, mostrando picos y valles de manera alternada. Visto esto, y considerando el tiempo que pueden demorar las redes neuronales en entrenar, se consideró que este comportamiento no es de fiar para ejecuciones que pueden durar horas. Por ende, se ha decidido estandarizar el uso de la función de activación tangente hiperbólica. 
+	
 	
 	
 	
