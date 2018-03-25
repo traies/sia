@@ -1,3 +1,5 @@
+#!/usr/bin/octave -qf
+
 Config = readconf("default.conf");
 
 terrain_name = load_config_variable(Config, "TERRAIN_NAME", false);
