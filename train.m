@@ -6,7 +6,7 @@
 # eta 
 # alfa
 
-function W = train(T, S, h, H, eta=10e-4, momentum=0.9)
+function W = train(T, S, h, H, act_func='tanh', eta=10e-4, momentum=0.9)
  W = {};
  oldWDelta = {};
  T_size = size(T)(2);
@@ -36,14 +36,10 @@ function W = train(T, S, h, H, eta=10e-4, momentum=0.9)
     V{1} = [-1 T(x, :)];
     # Feed forward, add bias to each layer
     for i = 1:h
-      tempV = tanh(V{i}*W{i});
-      V{i+1} = [-1 tempV];
-      V_1{i+1} = (1- tempV .** 2);
+      [V{i+1}, V_1{i+1}] = activation(act_func, V{i} * W{i}, 1, true);
     endfor
     # Feed forward last layer
-    tempV = tanh(V{h+1}*W{h+1});
-    V{h+2} = tempV;
-    V_1{h+2} = 1- tempV .** 2;
+    [V{h+2}, V_1{h+2}] = activation(act_func, V{h+1} * W{h+1}, 1, false);
     Delta = {};
     # Find last delta (list indexes are backwards)
     Delta{h+1} =  V_1{h+2} .* (S(x) - V{h+2});
