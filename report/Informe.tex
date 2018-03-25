@@ -38,6 +38,8 @@
 		
 		Se ha evaluado una serie de variaciones sobre el algoritmo de \textit{backpropagation}, particularmente \textit{adaptive eta} y \textit{momentum}, como así también combinaciones de ambas técnicas. Asimismo, se han comparado los resultados obtenidos actualizando los pesos de la red tanto de manera incremental como en \textit{batch}. 
 		
+		Asimismo, se han entrenado diversas redes con capacidad de generalizar terrenos de diferentes ciudades del mundo, tomando como referencia puntos tomados de mapas de altura de dichas ciudades.
+		
 		Por último, se han comparado estas técnicas con el estado del arte en algoritmos de generación aleatoria de terrenos, como el \textit{Diamond-Square Algorithm} (DSA). El objetivo ha sido probar las capacidades de una red neuronal de aprender terrenos con una \textit{apariencia} lo más aleatoria posible, tal como busca lograr DSA. 
 	\end{abstract}
 	
@@ -103,7 +105,153 @@
 		\item La diferencia entre el error cuadrático medio anterior y el actual es $\sim 0$.
 	\end{enumerate}
 	
+	\subsubsection{Algoritmo en \textit{batches} de tamaño parametrizable}
 	
+	\paragraph{} La idea de esta versión de \textit{batch} es idéntica a la anterior, salvo que los \textit{batches} se toman de a tamaños parametrizables.
+	
+	\newpage
+	
+	\section{Resultados del entrenamiento}
+	
+	\paragraph{} En esta sección, se discutirán los mejores resultados logrados con ambos algoritmos, exhibiéndose la progresión del error y analizándose la precisión de la red obtenida al generalizar el terreno.
+	
+	\paragraph{Glosario de terminología:}
+	
+	\begin{itemize}
+		\item $f$: Función de activación
+		\item $H$: Capas ocultas (\verb|array|)
+		\item $\eta$: \textit{Learning rate}
+		\item $momentum$: factor del \textit{momentum}
+		\item $\alpha$: constante de crecimiento del eta adaptativo
+		\item $\beta$: factor de decrecimiento del eta adaptativo
+		\item $k$: constante de decrecimiento consistente
+		\item $\epsilon$: cota inferior para $\eta$ (condición de corte)
+		\item $\epsilon_{e}$: condición de corte del error cuadrático medio
+		\item $max_iters$: número máximo de \textit{epochs}.
+		
+	\end{itemize}
+	
+	\subsection{Algoritmo incremental con \textit{adaptive eta}}
+	
+	\paragraph{} A continuación siguen los resultados obtenidos para el entrenamiento con el algoritmo incremental utilizando eta adaptativo.  
+	
+	\subsubsection{Parámetros y resultados generales} 
+	
+	\begin{itemize}
+		\item $f = \tanh$
+		\item $H = \left[10, 10\right]$
+		\item $\eta = 0.1$
+		\item $momentum = 0$
+		\item $\alpha = 0.05$
+		\item $\beta = 0.1$
+		\item $k = 5$
+		\item $\epsilon = 0.00001$
+		\item $\epsilon_{e} = .0001$
+		\item $max_iters = 10000$
+	\end{itemize}
+	
+	\paragraph{} En este primer caso de análisis, se ha logrado obtener una red neuronal que aproxima el terreno con un error cuadrático medio sobre el \textit{set} de entrenamiento de $6.5*10^{-4}$. Es decir, la ejecución del algoritmo finalizó por haberse alcanzado el máximo de iteraciones. El \textit{set} de pesos que menor error cuadrático medio logró se correspondió con la iteración $9954$.
+	
+	\paragraph{} Un aspecto a destacar es la elección de no utilizar \textit{momentum}. Por lo general, al combinar \textit{momentum} con \textit{adaptive eta}, se ha encontrado que el comportamiento del error a lo largo del tiempo es mucho más errático que sin utilizar el primero. Por ende, se ha optado por no usar \textit{momentum} en este caso, optándose por usarlo como mecanismo de aceleración de \textit{backpropagation} en el algoritmo por \textit{batch}.
+	
+	\subsubsection{Tasas de éxito}
+	
+	\paragraph{} Un indicador de qué tan acertado fue el entrenamiento de la red se puede encontrar en las tasas de éxito, es decir, en qué proporción la red neuronal generalizó correctamente un nuevo dato. Para ello, se está tomando como punto de comparación el \textit{set} de muestras de prueba extraído tal como se indicó más arriba. Este conjunto representa el $10\%$ del conjunto original. Los intervalos dentro de los cuales se considera que el valor fue correctamente generalizado están definidos por el Épsilon ($\epsilon$): $\left[S_{i}-\epsilon, S_{i}+\epsilon\right]$.  
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{ll}
+			\hline
+			Épsilon & Éxito ($\%$)\\ \hline
+			.05     & 75.6  \\
+			.06     & 80    \\
+			.07     & 84.5  \\
+			.08     & 91.2  \\
+			.09     & 91.2  \\
+			.1      & 97.8  \\
+			.11     & 100   \\ \hline
+			\end{tabular}
+			\caption{Tasas de éxito}
+			\label{ex1}
+	\end{table}
+	
+	\paragraph{} Como se podrá ver, con valores relativamente pequeños del Épsilon se logra tasas altas de éxito, considerando que el espacio de llegada (la coordenada $Z$) toma valores en el intervalo $\left[-1, 1\right]$.
+	
+	\subsubsection{Errores cometidos en el \text{set} de comparación}
+	
+	\paragraph{} En estrecha vinculación con el punto anterior, se puede analizar la diferencia entre el valor esperado y el valor emitido por la red. Esto está definido por:
+	
+	\begin{align}
+		D_{i} = abs(S_{c_{i}}-E_{i})
+	\end{align}
+	
+	\paragraph{} Donde $E_{i}$ es la evaluación del i-ésimo patrón, $S_{c_{i}}$ es su salida esperada.
+	
+	\paragraph{} Este análisis arroja los siguientes resultados:
+	
+	\begin{itemize}
+		\item $max(D) = 0.10006$
+		\item $min(D) = 1.7035*10^{-4}$
+		\item $mean(D) = 0.030684$
+	\end{itemize}
+	
+	\paragraph{} Cómo se puede ver, los valores están en línea con los resultados de la sección anterior. El valor más significativo en este punto es la media de las diferencias, que, como podrá observarse, es pequeña en relación a la longitud del espacio de llegada. 
+	
+	\paragraph{} A continuación se presenta la gráfica de cada una de las diferencias entre los valores esperado y calculado.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8.5cm]{../results/adaptive_eta_incremental/3/bar_incremental.png}
+		\caption{$D_i$}
+		\label{di1}
+	\end{figure}
+	
+	\paragraph{} Como puede verse en la figura \ref{di1}, existen picos en los cuales la diferencia es mucho mayor a la del resto. Analizar a qué puntos corresponden dichos valores permitirá comprender el comportamiento de la red.
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lll}
+			\hline
+			Muestra & \multicolumn{1}{c}{X} & \multicolumn{1}{c}{Y} \\ \hline
+			44      & -0.14806              & 0.31066               \\
+			3       & -1                    & -0.93007              \\
+			23      & 1                     & -0.11425              \\
+			4       & 0.061232              & -0.240449             \\ \hline
+		\end{tabular}
+		\caption{Puntos de mayor $D_{i}$}
+		\label{p1}
+	\end{table}
+	
+	\paragraph{} En la tabla \ref{p1} se pueden observar algunos datos interesantes. Las muestras $3$ y $23$ se localizan aproximadamente en dos diferentes puntas del terreno. Esto podría estar indicando que la red neuronal tiene mayores dificultades en aprender las puntas por ciertas características particulares que las mismas podrían tener.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8cm]{../results/heightmap.png}
+		\caption{Mapa de altura}
+		\label{heightmap}
+	\end{figure}
+	
+	\paragraph{} Como se podrá ver en el mapa de altura de la figura \ref{heightmap}, realizado mediante una generalización realizada por la red, en las puntas hay o bien depresiones muy acentuadas o elevaciones pronunciadas. Nótese que colores mas azulados reflejan puntos más bajos. 
+	
+	\paragraph{} Observando los valores de la muestra 4, puede afirmarse que este se encuentra en las inmediaciones de uno de los extremos del terreno, por lo que es de esperar que el comportamiento sea similar al de los casos anteriores.
+	
+	\subsubsection{Análisis del error cuadrático medio}
+	
+	\paragraph{} Para analizar la evolución del error cuadrático medio en el tiempo, la gráfica a continuación puede ayudar a entender su comportamiento. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/adaptive_eta_incremental/3/log_incremental.png}
+		\caption{Error cuadrático medio}
+		\label{error1}
+	\end{figure}
+	
+	\paragraph{} La figura \ref{error1} es una gráfica en escala logarítmica del error cuadrático medio en función del número de iteración. El aspecto quizás más interesante que se puede observar es la periodicidad con la que el error muestra picos de aumento, rápidamente corrigiéndose para mostrar el error una tendencia decreciente. Dicha periodicidad está relacionada con el valor $k$, es decir, el número de \textit{epochs} que se considera que expresa un decrecimiento consistente en el error. Es probable que lo que se observe sea que, al aumentar el eta, el error inicialmente aumenta para luego corregirse.
+	
+	\paragraph{} Otro aspecto interesante es el abrupto descenso del error en torno a la iteración 4000, sobre todo teniendo en cuenta que la pendiente de la curva, hasta ese momento, era similar a lo que se encuentra en torno a la iteración 6000, es decir, después de dicho suceso. Queda como interrogante el analizar si un descenso como tal podría haber ocurrido de haberse proseguido la ejecución. De todas formas, se considera que el error alcanzado resuelve con creces el objetivo del problema con errores mínimos, tal como se ha discutido en secciones anteriores. 
+
+	
+
 	
 	
 	
