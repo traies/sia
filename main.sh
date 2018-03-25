@@ -113,7 +113,7 @@ case "ADAPTIVE_ETA"
         hi_rand_interv);
 endswitch
 csvwrite(error_output, E);
-for i = 1:size(W)
+for i = 1:size(W)(2)
   csvwrite(["layer_" num2str(i) "_" weights_output], W{i});
 endfor
 
