@@ -476,9 +476,132 @@
 	
 	\paragraph{} En una implementación sin \textit{adaptive eta}, pero utilizando \textit{momentum} para acelerar el entrenamiento, estos parámetros se eliminan, haciendo que, para los criterios del Equipo, el entrenamiento sea más estable. Este es uno de los argumentos detrás de no haber permitido que el primero de los algoritmos ejecutara una cantidad de \textit{epochs} en el orden del segundo $-$ considérese asimismo que la ejecución de cada \textit{epoch} del algoritmo incremental es inherentemente computacionalmente más costosa. 
 	
+	\section[Otros algoritmos]{Comparación con otros algoritmos de generación de terreno}
+	
+	\paragraph{} La generación de terrenos procedural es un tema de estudio de suma importancia en determinadas áreas, siendo su aplicación de sumo interés en el desarrollo de videojuegos. Existe un gran número de videojuegos de mundo abierto que buscan proveer al jugador de experiencias nuevas partida tras partida, y uno de los mecanismos para lograr esto es ofrecerle constantemente paisajes desconocidos o exóticos.  
+	
+	\paragraph{} Existe una variedad de algoritmos que buscan ofrecer estas características, entre los cuales se puede nombrar el \textbf{Diamond-Square Algorithm (DSA)} \cite{dsa} y \textbf{Perlin noise} \cite{perlin}. En la siguiente sección se mostrarán algunos resultados que ofrece el primer algoritmo. 
+	
+	\subsection{Diamond-Square Algorithm}
+	
+	\paragraph{} El objetivo de \textbf{Diamond-Square Algorithm (DSA)} es simple: se parte de una matriz de dimensión $2^{N} + 1$ cuyas puntas están inicializadas en valores determinados por el usuario (\textit{seeds}). Para mayor aleatoriedad, es deseable que dichas \textit{seeds} sean provistas por un generador pseudoaleatorio. 
+	
+	\paragraph{} El objetivo, luego, es rellenar toda la matriz, utilizando estas \textit{seeds} como base, sumando ruido en cada paso $-$ idealmente de magnitud decreciente en el tiempo. La explicación completa detrás del algoritmo se puede encontrar en \cite{dsa}.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7.5cm]{../results/other_terrains/Heightmap_dsa.jpg}
+		\caption{Ejemplo de generación de terreno con \textbf{DSA}}
+		\label{dsaimg}
+	\end{figure}
+	
+	\paragraph{} Como puede verse en el mapa de altura en \ref{dsaimg}, \textbf{DSA} es capaz de generar terrenos sumamente interesantes, tanto con océanos como zonas costeras y montañas. Las características del terreno generado son parametrizables. Una implementación en \verb|Java| puede encontrarse en \cite{dsai}. 
+	
+	\subsection[Redes neuronales y terreno aleatorio]{Potencial de las redes neuronales para generación de terreno aleatorio}
+	
+	\paragraph{} El objetivo de esta sección es, basándose en el estado del arte en generación procedural de terrenos, analizar el potencial de las redes neuronales multicapa para generar similares resultados. 
+	
+	\paragraph{} Dado que 4 \textit{seeds} son insuficientes para entrenar las redes neuronales, y dado que se quiere generar un terreno de apariencia aleatoria pero preservando armonía, se ha optado por tomar como base de datos de entrenamiento mapas de altura de diversas ciudades del mundo. La herramienta utilizada para tal fin se puede encontrar en la siguiente referencia \cite{terrainparty}.
+	
+	\paragraph{Nota:} Para las siguientes generalizaciones, se ha utilizado el algoritmo en \textit{batch} con \textit{momentum} de la sección 2.2.
+	
+	\subsubsection{Punta del Este}
+	
+	\paragraph{} Con la herramienta mencionada, se ha tomado una captura del mapa de altura de la península de Maldonado, incluyendo la Isla Gorriti. Se han tomado 512 muestras equiespaciadas de una imagen de $1024x1024$ píxeles, utilizándose el $90\%$ para el conjunto de entrenamiento, y se ha utilizado el algoritmo mencionado con $max_{iters} = 10000$, lográndose un error cuadrático medio del orden de $10^{-2}$.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7cm]{../results/other_terrains/punta/punta_map.png}
+		\caption{Vista cartográfica}
+		\label{puntamap}
+	\end{figure}
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7.5cm]{../results/other_terrains/punta/punta_surf_10000.png}
+		\caption{Generalización lograda}
+		\label{punta}
+	\end{figure}
+	
+	\paragraph{} Como puede observarse en la gráfica tridimensional en \ref{punta}, la generalización del terreno sigue las líneas que se pueden observar en el mapa, incluso con los niveles de error detallados. Se puede notar una pérdida de definición en el área de la península y en la Isla Gorriti, lo cual puede tener que ver con la baja cantidad de muestras que se han tomado. Esto podría ser subsanado con un mayor nivel de muestras en dichas zonas. 
+	
+	\subsubsection{San Petersburgo}
+	
+	\paragraph{} Se ha tomado un mapa de altura de la bahía de San Petersburgo, Rusia. Se han extraído 1024 muestras equiespaciadas de una imagen de $1024x1024$ píxeles, utilizándose el $90\%$ para el conjunto de entrenamiento, y se ha utilizado el algoritmo mencionado con $max_{iters} = 5000$, lográndose un error cuadrático medio de $8.5*10^{-3}$.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7cm]{../results/other_terrains/spb/spb_map.png}
+		\caption{Vista cartográfica}
+		\label{spbmap}
+	\end{figure}
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7.5cm]{../results/other_terrains/spb/surf_spb_5000.png}
+		\caption{Generalización lograda}
+		\label{spb}
+	\end{figure}
+	
+	\paragraph{} Como se podrá observar, en líneas generales la generalización ha sido correcta. Dado el bajo nivel de muestras, en la ciudad propiamente dicha se pierde precisión, pudiéndose observar un ligero detalle de la desembocadura del río Neva en el golfo de Finlandia. Además, puede notarse que al norte y al sur hay dos elevaciones, las cuales constituyen un error, dado que el área es perfectamente plana (pantano). 
+	
+	\subsubsection{Dover}
+	
+	\paragraph{} Se ha tomado un mapa de altura de la ciudad de Dover, Inglaterra. Se han extraído 1024 muestras equiespaciadas de una imagen de $1024x1024$ píxeles, utilizándose el $90\%$ para el conjunto de entrenamiento, y se ha utilizado el algoritmo mencionado con $max_{iters} = 5000$, lográndose un error cuadrático medio de $8.25*10^{-3}$.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7cm]{../results/other_terrains/dover/dover_map.png}
+		\caption{Vista cartográfica}
+		\label{dovermap}
+	\end{figure}
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=7.5cm]{../results/other_terrains/dover/dover_5000.png}
+		\caption{Generalización lograda}
+		\label{dover}
+	\end{figure}
+	
+	\paragraph{} Las mayores dificultades se observan muy claramente en la zona del puerto. Sin embargo, las colinas al sur de la ciudad han sido generalizadas satisfactoriamente.  
+	
+	\subsection{Conclusiones}
+	
+	\paragraph{} Las redes neuronales tienen cierto potencial para generalizar terrenos reales, aunque debe notarse que los ordenes de magnitud de los errores cuadráticos medios exhibidos en esta sección son uno o dos veces superiores que los mostrados en la sección 2. El terreno asignado al equipo, si bien abunda en colinas y valles, es eminentemente curvado, sin haber picos de altura muy marcados en comparación a sus alrededores. En las ciudades reales probadas puede no existir tal comportamiento, a excepción que la ciudad se encuentre sobre una llanura perfectamente plana. 
+	
+	\paragraph{} A pesar de todos estos elementos, se rescata la capacidad de las redes neuronales de realizar generalizaciones aceptables. Naturalmente un algoritmo como \textbf{DSA} será más capaz al generar terreno aleatorio por el simple hecho de que ha sido creado para tal fin, destacando el hecho que dentro de las capacidades de \textbf{DSA} no está la replicación de terrenos reales. 
+	
+	\paragraph{} Se deja como propuesta la idea de producir un algoritmo enteramente autónomo de generación de terreno basado en redes neuronales, utilizando como valores de entrenamiento \textit{seeds} generadas por un algoritmo pseudoaleatorio con una distribución con reducido desvío estándar, a los efectos de generar terrenos armoniosos.
 	
 	
 	
+	
+	
+	\newpage
+	
+	\begin{thebibliography}{9}
+		
+		\bibitem{dsa}
+		\textsc{Wikipedia.org}, \textbf{Diamond-Square Algorithm},
+		\url{https://en.wikipedia.org/wiki/Diamond-square_algorithm}
+		
+		\bibitem{perlin}
+		\textsc{Wikipedia.org}, \textbf{Perlin noise},
+		\url{https://en.wikipedia.org/wiki/Perlin_noise}
+		
+		\bibitem{terrainparty}
+		\textsc{terrain.party}, \textbf{The easiest way to get real-world height maps for Cities: Skylines},
+		\url{https://terrain.party/}
+		
+		\bibitem{dsai}
+		\textsc{Github}, \textbf{Diamond-Square Algorithm implementation},
+		\url{https://github.com/saques/DiamondSquare}
+		
+	\end{thebibliography}
+
 	
 	
 	
