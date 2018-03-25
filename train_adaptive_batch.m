@@ -12,10 +12,10 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E state] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001)
- W = {};
+function [W E seed min_err min_iter] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001,  max_iters = 10000, lo_rand_interv, hi_rand_interv)
+W = {};
  E = [];
- state = rand("state");
+ seed = rand("seed");
  
  T_size = size(T)(2);
  samples = size(S)(1);
@@ -23,25 +23,26 @@ function [W E state] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', et
  #  Consider bias in first layer size
  prev = T_size + 1;
  
- #for adaptive eta
- prev_err = Inf;
- consistent_decrease_iters = k;
  oldWDelta = {};
- initial_eta = eta;
- initial_alfa = alfa;
- 
- min_err = Inf;
+
+ min_err = min_iter = prev_err = Inf;
  W_min = {};
  
  # Weights initialization (consider bias in each hidden layer)
  for i = 1:h
-   W{i} = rand(prev,H(i));
+   W{i} = randinterv(prev,H(i),lo_rand_interv,hi_rand_interv);
    oldWDelta{i} = zeros(prev, H(i));
    prev = H(i) + 1;
  endfor
  #  Initialize last layer
- W{h+1} = rand(prev, out);
+ W{h+1} = randinterv(prev, out,lo_rand_interv,hi_rand_interv);
  oldWDelta{h+1} = zeros(prev, 1);
+ 
+ 
+ #for adaptive eta
+ prev_err = Inf;
+ prev_W = W;
+ consistent_decrease_iters = k;
  iter = 0;
  while 1
   
@@ -118,7 +119,7 @@ function [W E state] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', et
   if(delta_err < 0)
     if(consistent_decrease_iters <= 0)
       eta += alfa;
-      #consistent_decrease_iters = k;
+      consistent_decrease_iters = k;
     else 
      consistent_decrease_iters -= 1;
     endif 
@@ -126,14 +127,16 @@ function [W E state] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', et
     #reset conditions
     consistent_decrease_iters = k;
     eta -= eta*beta;
-    for o = 1:h+1
-      #reset weights
-      W{i} -= Delta_W{i};
-    endfor
-    oldWDelta = reset_old_w(H, T_size);
+    W = prev_W;
     if(eta < epsilon)
       break;
     endif
+  else
+    break;  
+  endif
+  
+  if(iter >= max_iters)
+    break;  
   endif
   
   prev_err = err;
