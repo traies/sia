@@ -351,7 +351,9 @@
 	
 	\paragraph{} Se puede observar que, dentro de las primeras $20000$ iteraciones, los errores oscilan entre valores de $9*10^{-4}$ ($\exp(-7)$) y $6.7*10^{-3}$ ($\exp(-5)$), lo cual representa saltos de 1 orden de magnitud. 
 	
-	\paragraph{} Por último, puede notarse como hacia la iteración 80000 hubo un marcado incremento en la tasa de decrecimiento del error cuadrático medio, para luego asentarse en niveles comparados a los anteriores. 
+	\paragraph{} Adicionalmente, puede notarse como hacia la iteración 80000 hubo un marcado incremento en la tasa de decrecimiento del error cuadrático medio, para luego asentarse en niveles comparados a los anteriores. 
+	
+	\paragraph{} Por último, observando que en ciertos puntos de la curva $-$ principalmente dentro de las primeras 20000 iteraciones $-$ existen puntos con mayor tasa de descenso del error, podría suponerse que tomar valores de $\eta$ más grandes dicha tasa se incrementaría de manera positiva. En los casos que se ha probado esto $-$ siendo una suerte de variante del \textit{adaptive eta} $-$, los resultados han sido negativos.  
 	
 	\subsection{Algoritmo en \textit{batches} parametrizables}
 	
@@ -435,6 +437,45 @@
 	\paragraph{} Para esta ejecución, se han utilizado los mismos valores iniciales de la sección 2. de este apartado, con la diferencia que la función de activación es la logística. 
 	
 	\paragraph{} La gráfica muestra claramente un comportamiento errático, mostrando picos y valles de manera alternada. Visto esto, y considerando el tiempo que pueden demorar las redes neuronales en entrenar, se consideró que este comportamiento no es de fiar para ejecuciones que pueden durar horas. Por ende, se ha decidido estandarizar el uso de la función de activación tangente hiperbólica. 
+	
+	\subsection{Otras arquitecturas}
+	
+	\paragraph{} Como se puede haber notado, todas las arquitecturas hasta ahora exhibidas son idénticas: dos capas con sendas 10 neuronas. A continuación se mostraran algunos de los comportamientos observados en otras arquitecturas que fueron descartadas.
+	
+	\paragraph{Nota:} Todas las redes de esta sección se han entrenado con el algoritmo de \textit{batch} con \textit{momentum}, con idénticas configuraciones a las de la sección 2 de este apartado. 
+	
+	\subsubsection{Mínimos locales}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/other_architectures/batch_momentum_5_5/b_m_5_5.jpg}
+		\caption{\textit{Batch} con \textit{momentum}, $H = \left[5, 5\right]$}
+		\label{bm55}
+	\end{figure}
+	
+	\paragraph{} En la figura \ref{bm55}, se puede ver como la pendiente de la curva del error cuadrático medio tiende a $0$, luego de haber oscilado dentro de las primeras $50$ iteraciones. Este comportamiento permitió, en muchos casos, descartar muchas arquitecturas candidatas en el proceso de entrenamiento. 
+	
+	\subsubsection{Incremento del error}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=9cm]{../results/other_architectures/batch_momentum_80/b_m_80.jpg}
+		\caption{\textit{Batch} con \textit{momentum}, $H = \left[80\right]$}
+		\label{bm80}
+	\end{figure}
+	
+	\paragraph{} La gráfica \ref{bm80} exhibe otro de los comportamientos encontrados: en vez de decrecer, la función del error cuadrático medio crece rápidamente para luego atascarse en un mínimo local. 
+	
+	\subsection{Conclusiones}
+	
+	\paragraph{} Como conclusión de esta sección, se puede afirmar que, para los alcances del problema, las tres redes neuronales propuestas los resuelven con creces. En el peor de los casos, se ha conseguido generalizar correctamente entorno al $75\%$ de los casos de prueba.
+	
+	\paragraph{} La discusión, por ende, se centrará más en la relación que existe entre la precisión de la generalización y el esfuerzo computacional requerido para obtener los pesos de la red. Con respecto a este punto, se rescatan las fortalezas exhibidas por el último caso, que combina errores comparables a los de la segunda ejecución, insumiendo su entrenamiento un tiempo moderado. Por ende, al hacer un balance entre estas características, la tercera red sería la red escogida para una aplicación en producción.
+	
+	\paragraph{} Si bien el algoritmo incremental con \textit{adaptive eta} presenta una buena performance, su rasgo característico $-$ que $\eta$ se adapte en función al error $-$ hace que la elección de los parámetros de crecimiento y decrecimiento correctos sea crítica para la estabilidad del algoritmo. Valores muy altos de la constante de crecimiento y bajos del factor de decrecimiento pueden hacer que el algoritmo recaiga en una situación en la que, tras un incremento del $\eta$, el error vaya en aumento y el factor de decrecimiento no pueda contener tal situación. Valores muy bajos de la constante de crecimiento hacen que el proceso de aceleración del entrenamiento sea muy lento. 
+	
+	\paragraph{} En una implementación sin \textit{adaptive eta}, pero utilizando \textit{momentum} para acelerar el entrenamiento, estos parámetros se eliminan, haciendo que, para los criterios del Equipo, el entrenamiento sea más estable. Este es uno de los argumentos detrás de no haber permitido que el primero de los algoritmos ejecutara una cantidad de \textit{epochs} en el orden del segundo $-$ considérese asimismo que la ejecución de cada \textit{epoch} del algoritmo incremental es inherentemente computacionalmente más costosa. 
+	
 	
 	
 	
