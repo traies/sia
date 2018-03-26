@@ -163,13 +163,13 @@
 		\begin{tabular}{ll}
 			\hline
 			Épsilon & Éxito ($\%$)\\ \hline
-			.05     & 75.6  \\
-			.06     & 80    \\
-			.07     & 84.5  \\
-			.08     & 91.2  \\
-			.09     & 91.2  \\
-			.1      & 97.8  \\
-			.11     & 100   \\ \hline
+			0.05     & 75.6  \\
+			0.06     & 80    \\
+			0.07     & 84.5  \\
+			0.08     & 91.2  \\
+			0.09     & 91.2  \\
+			0.1      & 97.8  \\
+			0.11     & 100   \\ \hline
 			\end{tabular}
 			\caption{Tasas de éxito}
 			\label{ex1}
@@ -281,18 +281,18 @@
 		\begin{tabular}{ll}
 			\hline
 			Épsilon & Éxito ($\%$)\\ \hline
-			.05     & 88.9  \\
-			.06     & 93.4    \\
-			.07     & 95.6  \\
-			.08     & 97.8  \\
-			.09     & 100  \\
-			.1      & 100  \\ \hline
+			0.05     & 88.9  \\
+			0.06     & 93.4    \\
+			0.07     & 95.6  \\
+			0.08     & 97.8  \\
+			0.09     & 100  \\
+			0.1      & 100  \\ \hline
 		\end{tabular}
 		\caption{Tasas de éxito}
 		\label{ex2}
 	\end{table}
 	
-	\paragraph{} Como podrá verse, a diferencia del caso anterior, todas las muestras de prueba son generalizadas correctamente en un intervalo de $\pm 0.1$, teniendo entorno a un $89\%$ de éxito incluso con intervalos el doble de pequeños. Analizando el último caso mencionado, este valor es alrededor de un $14\%$ mejor que su equivalente en los resultados del algoritmo anterior. 
+	\paragraph{} Como podrá verse, a diferencia del caso anterior, todas las muestras de prueba son generalizadas correctamente en un intervalo de $\pm 0.1$, teniendo en torno a un $89\%$ de éxito incluso con intervalos el doble de pequeños. Analizando el último caso mencionado, este valor es alrededor de un $14\%$ mejor que su equivalente en los resultados del algoritmo anterior. 
 	
 	\subsubsection{Errores cometidos en el \text{set} de comparación}
 	
@@ -304,7 +304,7 @@
 		\item $mean(D) = 0.021261$
 	\end{itemize}
 	
-	\paragraph{} El valor que más dista del obtenido en la ejecución anterior es el $min(D)$, que se aproxima a ser 1 orden de magnitud inferior a su equivalente del caso anterior. Por lo demás, los otros valores son, razonablemente inferiores, siendo la media de la diferencia entre los valores esperado y calculado inferior entorno a $\frac{1}{3}$. 
+	\paragraph{} El valor que más dista del obtenido en la ejecución anterior es el $min(D)$, que se aproxima a ser 1 orden de magnitud inferior a su equivalente del caso anterior. Por lo demás, los otros valores son, razonablemente inferiores, siendo la media de la diferencia entre los valores esperado y calculado inferior en torno a $\frac{1}{3}$. 
 	
 	\paragraph{} El siguiente gráfico muestra los errores de cada coordenada:
 	
@@ -383,12 +383,12 @@
 		\begin{tabular}{ll}
 			\hline
 			Épsilon & Éxito ($\%$)\\ \hline
-			.05     & 77.8  \\
-			.06     & 88.9    \\
-			.07     & 95.6  \\
-			.08     & 97.8  \\
-			.09     & 100  \\ 
-			.1      & 100  \\ \hline 
+			0.05     & 77.8  \\
+			0.06     & 88.9    \\
+			0.07     & 95.6  \\
+			0.08     & 97.8  \\
+			0.09     & 100  \\ 
+			0.1      & 100  \\ \hline 
 		\end{tabular}
 		\caption{Tasas de éxito}
 		\label{ex3}
@@ -421,7 +421,7 @@
 	
 	\paragraph{} Como podrá verse, a diferencia de los casos anteriores, no se observan saltos en los valores del error cuadrático medio. Esto puede estar vinculado con una elección acertada de los pesos iniciales que, si bien son inicializados de manera no determinística, ligeros cambios pueden guiar a resultados más precisos o, en este caso, con un descenso del error más suave. 
 	
-	\paragraph{} Como detalle peculiar, llama la atención lo que puede observarse entorno a la iteración 2000: un pequeño estancamiento en un mínimo local que fue subsanado rápidamente por la suma de pesos tras cierta \textit{epoch}. Es razonable pensar que, sin el accionar del \textit{momentum}, dicho cambio pudo no haber existido. 
+	\paragraph{} Como detalle peculiar, llama la atención lo que puede observarse en torno a la iteración 2000: un pequeño estancamiento en un mínimo local que fue subsanado rápidamente por la suma de pesos tras cierta \textit{epoch}. Es razonable pensar que, sin el accionar del \textit{momentum}, dicho cambio pudo no haber existido. 
 	
 	\subsection{Función logística}
 	
@@ -468,7 +468,7 @@
 	
 	\subsection{Conclusiones}
 	
-	\paragraph{} Como conclusión de esta sección, se puede afirmar que, para los alcances del problema, las tres redes neuronales propuestas los resuelven con creces. En el peor de los casos, se ha conseguido generalizar correctamente entorno al $75\%$ de los casos de prueba.
+	\paragraph{} Como conclusión de esta sección, se puede afirmar que, para los alcances del problema, las tres redes neuronales propuestas los resuelven con creces. En el peor de los casos, se ha conseguido generalizar correctamente en torno al $75\%$ de los casos de prueba.
 	
 	\paragraph{} La discusión, por ende, se centrará más en la relación que existe entre la precisión de la generalización y el esfuerzo computacional requerido para obtener los pesos de la red. Con respecto a este punto, se rescatan las fortalezas exhibidas por el último caso, que combina errores comparables a los de la segunda ejecución, insumiendo su entrenamiento un tiempo moderado. Por ende, al hacer un balance entre estas características, la tercera red sería la red escogida para una aplicación en producción.
 	
@@ -570,7 +570,7 @@
 	
 	\subsection{Conclusiones}
 	
-	\paragraph{} Las redes neuronales tienen cierto potencial para generalizar terrenos reales, aunque debe notarse que los ordenes de magnitud de los errores cuadráticos medios exhibidos en esta sección son uno o dos veces superiores que los mostrados en la sección 2. El terreno asignado al equipo, si bien abunda en colinas y valles, es eminentemente curvado, sin haber picos de altura muy marcados en comparación a sus alrededores. En las ciudades reales probadas puede no existir tal comportamiento, a excepción que la ciudad se encuentre sobre una llanura perfectamente plana. 
+	\paragraph{} Las redes neuronales tienen cierto potencial para generalizar terrenos reales, aunque debe notarse que los órdenes de magnitud de los errores cuadráticos medios exhibidos en esta sección son uno o dos veces superiores que los mostrados en la sección 2. El terreno asignado al equipo, si bien abunda en colinas y valles, es eminentemente curvado, sin haber picos de altura muy marcados en comparación a sus alrededores. En las ciudades reales probadas puede no existir tal comportamiento, a excepción que la ciudad se encuentre sobre una llanura perfectamente plana. 
 	
 	\paragraph{} A pesar de todos estos elementos, se rescata la capacidad de las redes neuronales de realizar generalizaciones aceptables. Naturalmente un algoritmo como \textbf{DSA} será más capaz al generar terreno aleatorio por el simple hecho de que ha sido creado para tal fin, destacando el hecho que dentro de las capacidades de \textbf{DSA} no está la replicación de terrenos reales. 
 	
