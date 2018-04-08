@@ -6,6 +6,8 @@
 # eta 
 # alfa
 
+
+# DEPRECATED: Usar batch adaptative tamanio 1
 function W = train(T, S, h, H, act_func='tanh', eta=10e-4, momentum=0.9)
  W = {};
  oldWDelta = {};

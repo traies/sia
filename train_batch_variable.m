@@ -12,7 +12,7 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out,act_func='tanh', eta=0.01, momentum=0.9, batch_size=60, error_epsilon = .001, max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5)
+function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, batch_size=60, error_epsilon = .001, max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5, plot_interval = 10)
  W = {};
  E = [];
  seed = rand("seed");
@@ -38,6 +38,7 @@ function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out,act_
  W{h+1} = randinterv(prev, out,lo_rand_interv,hi_rand_interv);
  oldWDelta{h+1} = zeros(prev, 1);
  iter = 0;
+ hold off;
  while 1
   proc = 0;
   while proc < samples
@@ -94,14 +95,28 @@ function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out,act_
   err /= 2*samples;
   E(end+1) = err;
   
+  if (mod(iter, plot_interval) == 0)
+    subplot (2, 1, 1)
+    plot(1:iter+1, E, '-b');
+    xlabel ("Iteraciones");
+    ylabel ("Error cuadratico medio")
+    subplot (2, 1, 2)
+    plot(1:iter+1, log10(E), '-b');
+    xlabel ("Iteraciones");
+    ylabel ("log10(Error cuadratico medio)");
+    pause(0.01);
+  endif;
+  
   if (err < min_err)
     W_min = W;
     min_err = err;
     min_iter = iter;
   endif
   
- 
+  
   printf("Iter %g, Error: %f \n",iter, err);
+  
+  
   fflush(stdout);
 
   #break conditions: if reached local minimum

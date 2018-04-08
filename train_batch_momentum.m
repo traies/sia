@@ -13,7 +13,7 @@
 # state the state of the random number generator
 
 function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, error_epsilon = .001, 
-                                                            max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5)
+                                                            max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5, plot_interval = 10)
  W = {};
  E = [];
  seed = rand("seed");
@@ -90,6 +90,18 @@ function [W E seed min_err min_iter] = train_batch_momentum(T, S, h, H, out, act
   endfor
   err /= 2*samples;
   E(end+1) = err;
+  
+  if (mod(iter, plot_interval) == 0)
+    subplot (2, 1, 1)
+    plot(1:iter+1, E, '-b');
+    xlabel ("Iteraciones");
+    ylabel ("Error cuadratico medio")
+    subplot (2, 1, 2)
+    plot(1:iter+1, log10(E), '-b');
+    xlabel ("Iteraciones");
+    ylabel ("log10(Error cuadratico medio)")
+    pause(0.01);
+  endif;
   
   if (err < min_err)
     W_min = W;

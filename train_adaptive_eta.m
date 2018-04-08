@@ -51,7 +51,8 @@ function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, act_f
  consistent_decrease_iters = k;
  
  
- 
+  hold off;
+
  iter = 0;
  while 1
   
@@ -97,6 +98,18 @@ function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, act_f
   endfor
   err /= 2*samples;
   E(end+1) = err;
+  
+  if (mod(iter, 10) == 0)
+    subplot (2, 1, 1)
+    plot(1:iter+1, E, '-b');
+    xlabel ("Iteraciones");
+    ylabel ("Error cuadratico medio")
+    subplot (2, 1, 2)
+    plot(1:iter+1, log10(E), '-b');
+    xlabel ("Iteraciones");
+    ylabel ("log10(Error cuadratico medio)")
+    pause(0.01);
+  endif;
   
   if (err < min_err)
     W_min = W;

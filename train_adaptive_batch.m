@@ -12,7 +12,7 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E seed min_err min_iter] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001,  max_iters = 10000, lo_rand_interv, hi_rand_interv)
+function [W E seed min_err min_iter] = train_adaptive_batch(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, epsilon = 0.00001, error_epsilon = .001,  max_iters = 10000, lo_rand_interv, hi_rand_interv, plot_interval = 10)
 W = {};
  E = [];
  seed = rand("seed");
@@ -44,6 +44,8 @@ W = {};
  prev_W = W;
  consistent_decrease_iters = k;
  iter = 0;
+ hold off;
+
  while 1
   
   Delta_W = {};
@@ -98,6 +100,18 @@ W = {};
   err /= 2*samples;
   E(end+1) = err;
   
+  if (mod(iter, plot_interval) == 0)
+    subplot (2, 1, 1)
+    plot(1:iter+1, E, '-b');
+    xlabel ("Iteraciones");
+    ylabel ("Error cuadratico medio")
+    subplot (2, 1, 2)
+    plot(1:iter+1, log10(E), '-b');
+    xlabel ("Iteraciones");
+    ylabel ("log10(Error cuadratico medio)")
+    pause(0.01);
+  endif;
+  
   if (err < min_err)
     W_min = W;
     min_err = err;
@@ -106,6 +120,7 @@ W = {};
 
   printf("Iter %g, Error: %f \n",iter, err);
   printf("Eta: %f \n", eta);
+  
   fflush(stdout);
   
   # Break if all samples passed

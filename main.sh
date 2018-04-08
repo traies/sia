@@ -36,16 +36,24 @@ epsilon = load_config_variable(Config, "ADAPTIVE_ETA_EPSILON", true);
 k = load_config_variable(Config, "ADAPTIVE_ETA_K", true);
 error_output = load_config_variable(Config, "OUTPUT_ERROR_FILE", false);
 weights_output = load_config_variable(Config, "OUTPUT_WEIGHTS_FILE", false);
+plot_interval = load_config_variable(Config, "PLOT_INTERVAL", true);
 switch(algorithm)
 case "CONSTANT"
-  [W E seed min_err min_iter] = train(
+  [W E seed min_err min_iter] = train_batch_variable(
         T,
         S, 
         length(H), 
-        H, 
+        H,
+        1,
         activation_func, 
         eta, 
-        momentum);
+        momentum,
+        1,
+        error_epsilon,
+        max_iters,
+        lo_rand_interv,
+        hi_rand_interv,
+        plot_interval);
 case "BATCH"
   [W E seed min_err min_iter] = train_batch_momentum(
         T,
@@ -59,7 +67,8 @@ case "BATCH"
         error_epsilon,
         max_iters, 
         lo_rand_interv, 
-        hi_rand_interv);
+        hi_rand_interv,
+        plot_interval);
 case "BATCH_VARIABLE"
   [W E seed min_err min_iter] = train_batch_variable(
         T,
@@ -74,7 +83,8 @@ case "BATCH_VARIABLE"
         error_epsilon,
         max_iters, 
         lo_rand_interv, 
-        hi_rand_interv);
+        hi_rand_interv,
+        plot_interval);
 case "BATCH_ADAPTIVE"
   [W E seed min_err min_iter] = train_adaptive_batch(
         T,
@@ -110,7 +120,8 @@ case "ADAPTIVE_ETA"
         error_epsilon, 
         max_iters,
         lo_rand_interv, 
-        hi_rand_interv);
+        hi_rand_interv,
+        plot_interval);
 endswitch
 csvwrite(error_output, E);
 for i = 1:size(W)(2)
