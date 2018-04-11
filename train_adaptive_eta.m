@@ -14,11 +14,16 @@
 
 function [W E seed min_err min_iter] = train_adaptive_eta(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, alfa=0.2, beta=.1, k=5, 
                                                           epsilon = 0.00001, error_epsilon = .001, max_iters = 10000, 
-                                                          lo_rand_interv=-.5, hi_rand_interv=.5)
+                                                          lo_rand_interv=-.5, hi_rand_interv=.5,
+                                                          use_seed=false, seed=0)
  
  W = {};
  E = [];
- seed = rand("seed");
+ if (use_seed)
+   rand("state", seed);
+ else
+   seed = rand("state");
+ endif
  
  T_size = size(T)(2);
  samples = size(S)(1);

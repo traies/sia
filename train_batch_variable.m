@@ -12,10 +12,15 @@
 # E mean quadratic error over time
 # state the state of the random number generator
 
-function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, batch_size=60, error_epsilon = .001, max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5, plot_interval = 10)
+function [W E seed min_err min_iter] = train_batch_variable(T, S, h, H, out, act_func='tanh', eta=0.01, momentum=0.9, batch_size=60,
+   error_epsilon = .001, max_iters = 10000, lo_rand_interv=-.5, hi_rand_interv=.5, plot_interval = 10, use_seed=false, seed=0)
  W = {};
  E = [];
- seed = rand("seed");
+  if (use_seed)
+   rand("state", seed);
+ else
+   seed = rand("state");
+ endif
  
  T_size = size(T)(2);
  samples = size(S)(1);

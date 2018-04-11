@@ -9,7 +9,7 @@ adjust_high = load_config_variable(Config, "TERRAIN_HIGH_ADJUST", true);
 
 from_image = load_config_variable(Config, "READ_HEIGHT_MAP", true);
 samples = load_config_variable(Config, "HEIGHT_MAP_SAMPLES", true);
-if (from_image)
+if (from_image == 1)
   [T, S] = load_height_map_training(terrain_name, samples, adjust_low, adjust_high);
   else
   [T, S] = load_data(
@@ -37,6 +37,13 @@ k = load_config_variable(Config, "ADAPTIVE_ETA_K", true);
 error_output = load_config_variable(Config, "OUTPUT_ERROR_FILE", false);
 weights_output = load_config_variable(Config, "OUTPUT_WEIGHTS_FILE", false);
 plot_interval = load_config_variable(Config, "PLOT_INTERVAL", true);
+use_seed = load_config_variable(Config, "USE_SEED", true);
+seed_input = load_config_variable(Config, "SEED_INPUT_FILE", false);
+seed_output = load_config_variable(Config, "SEED_OUTPUT_FILE", false);
+
+if (use_seed == 1)
+  og_seed = csvread(seed_input);
+endif
 switch(algorithm)
 case "CONSTANT"
   [W E seed min_err min_iter] = train_batch_variable(
@@ -53,7 +60,9 @@ case "CONSTANT"
         max_iters,
         lo_rand_interv,
         hi_rand_interv,
-        plot_interval);
+        plot_interval,
+        use_seed,
+        og_seed);
 case "BATCH"
   [W E seed min_err min_iter] = train_batch_momentum(
         T,
@@ -68,7 +77,9 @@ case "BATCH"
         max_iters, 
         lo_rand_interv, 
         hi_rand_interv,
-        plot_interval);
+        plot_interval,
+        use_seed,
+        og_seed);
 case "BATCH_VARIABLE"
   [W E seed min_err min_iter] = train_batch_variable(
         T,
@@ -84,7 +95,9 @@ case "BATCH_VARIABLE"
         max_iters, 
         lo_rand_interv, 
         hi_rand_interv,
-        plot_interval);
+        plot_interval,
+        use_seed,
+        og_seed);
 case "BATCH_ADAPTIVE"
   [W E seed min_err min_iter] = train_adaptive_batch(
         T,
@@ -102,7 +115,9 @@ case "BATCH_ADAPTIVE"
         error_epsilon, 
         max_iters,
         lo_rand_interv,
-        hi_rand_interv);
+        hi_rand_interv,
+        use_seed,
+        og_seed);
 case "ADAPTIVE_ETA"
   [W E seed min_err min_iter] = train_adaptive_eta(
         T,
@@ -121,9 +136,12 @@ case "ADAPTIVE_ETA"
         max_iters,
         lo_rand_interv, 
         hi_rand_interv,
-        plot_interval);
+        plot_interval,
+        use_seed,
+        og_seed);
 endswitch
 csvwrite(error_output, E);
+csvwrite(seed_output, seed);
 for i = 1:size(W)(2)
   csvwrite(["layer_" num2str(i) "_" weights_output], W{i});
 endfor
